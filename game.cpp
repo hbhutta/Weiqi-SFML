@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <math.h>
 
 /**
  * Near:
@@ -12,33 +13,19 @@
 class Game {
     public:
         Game();
+
+        struct Stone {
+            float x;
+            float y;
+            sf::Color color;
+        };
+
         void run() {
-            // loadTextures();
-            // createBoard();
             while (window.isOpen()) {
                 processEvents();
                 update();
                 render();
             }
-        }
-
-        void createBoard() {
-            // for (int i = 0; i < BOARD_SIZE; i++) {
-            //     for (int j = 0; j < BOARD_SIZE; j++) {
-            //         BOARD[i].push_back(EMPTY);
-            //     }
-            // }
-        }
-
-        void loadTextures() {
-            // try {
-            //     background_texture.loadFromFile("images/background/wood_3.png");
-            //     board_background.setScale(5.f, 5.f);
-            //     board_background.setTexture(background_texture);
-            // }
-            // catch (std::runtime_error) {
-            //     // just catch, do nothing; resort to backup
-            // }
         }
 
         void processEvents() {
@@ -50,24 +37,28 @@ class Game {
                     }
                     case sf::Event::MouseButtonPressed: {
                          if (event.mouseButton.button == sf::Mouse::Left) {
-                            float x = event.mouseButton.x;
-                            float y = event.mouseButton.y;
 
                             printf("Placing stone...\n");
-                            std::pair<int, int> position;
-                            position.first = roundToHundreds(event.mouseButton.x);
-                            position.second = roundToHundreds(event.mouseButton.y);
-                            flagPosition(position);
+                            ; // bool is color (false for black, true for white)
+                            printf("Position: (%d, %d)\n", event.mouseButton.x, event.mouseButton.y);
+
+                            struct Stone stone;
+
+                            stone.x = roundToHundreds(event.mouseButton.x);
+                            stone.y = roundToHundreds(event.mouseButton.y);
+                            stone.color = sf::Color::Black; // initial color
+                            flagPosition(stone);
+                            stone.color = sf::Color::White;
                             
-                            placeStone(x, y); // stone must be of the right color (if black stone was previously placed, next stone is white)
+                            // placeStone(stone); // stone must be of the right color (if black stone was previously placed, next stone is white)
                          }
-                    }
+                    }   
                 }
             }
         }
 
-        void flagPosition(std::pair<int, int> position) {
-            BOARD.push_back(position);
+        void flagPosition(Stone stone) {
+            BOARD.push_back(stone);
         }
 
         /**
@@ -79,17 +70,17 @@ class Game {
             }
         }
 
-        void drawStone(std::pair<int, int> position) {
+        void drawStone(Stone stone) {
             float STONE_RADIUS = CELL_SIZE / 2;
             float STONE_OUTLINE_THICKNESS = 1.f;
 
             sf::CircleShape black_stone_shape;
             black_stone_shape.setRadius(STONE_RADIUS);
             black_stone_shape.setOrigin(black_stone_shape.getLocalBounds().width / 2, black_stone_shape.getLocalBounds().height / 2);
-            black_stone_shape.setFillColor(sf::Color::Black);
+            black_stone_shape.setFillColor(stone.color);
             black_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
-            black_stone_shape.setOutlineColor(sf::Color::Black);
-            black_stone_shape.setPosition(sf::Vector2f(position.first, position.second));
+            black_stone_shape.setOutlineColor(stone.color);
+            black_stone_shape.setPosition(sf::Vector2f(stone.x, stone.y));
             window.draw(black_stone_shape);
         }
         
@@ -99,40 +90,41 @@ class Game {
             if (tens < 50) {
                 return value - tens;
             }
-            else if (tens >= 50) {
-                return value - step;
-            }
+            // else if (tens >= 50) {
+            return (value - tens) + 100;
+            // }
+            // return value;
         } 
     
         /**
          * When the stone is placed, round the x and y values to multiples of 100
         */
-        void placeStone(float x, float y) {
-            sf::CircleShape white_stone_shape;
-            white_stone_shape.setRadius(CELL_SIZE / 2);
-            white_stone_shape.setFillColor(sf::Color::White);
-            white_stone_shape.setPosition(sf::Vector2f(x,y));
-            window.draw(white_stone_shape);
-            printf("Placed white stone at (%4.2f, %4.2f)\n", x, y);
-            /**
-             * try-catch load texture for fancy stone
-             * otherwise just use sf::CircleShape
-            */
-            if (TURN_COLOR) {
+        // void placeStone(Stone stone) {
+        //     sf::CircleShape white_stone_shape;
+        //     white_stone_shape.setRadius(CELL_SIZE / 2);
+        //     white_stone_shape.setFillColor(sf::Color::White);
+        //     white_stone_shape.setPosition(sf::Vector2f(stone.x,stone.y));
+        //     window.draw(white_stone_shape);
+        //     // printf("Placed white stone at (%4.2f, %4.2f)\n", x, y);
+        //     /**
+        //      * try-catch load texture for fancy stone
+        //      * otherwise just use sf::CircleShape
+        //     */
+        //     if (TURN_COLOR) {
                 
-            }
+        //     }
 
 
-            else {
-                sf::CircleShape black_stone_shape;
-                black_stone_shape.setRadius(CELL_SIZE);
-                black_stone_shape.setFillColor(sf::Color::Black);
-                black_stone_shape.setPosition(sf::Vector2f(x,y));
-                window.draw(black_stone_shape);
-                printf("Placed black stone at (%4.2f, %4.2f)\n", x, y);
-            }
-            TURN_COLOR = !(TURN_COLOR); 
-        }
+        //     else {
+        //         sf::CircleShape black_stone_shape;
+        //         black_stone_shape.setRadius(CELL_SIZE);
+        //         black_stone_shape.setFillColor(sf::Color::Black);
+        //         black_stone_shape.setPosition(sf::Vector2f(x,y));
+        //         window.draw(black_stone_shape);
+        //         printf("Placed black stone at (%4.2f, %4.2f)\n", x, y);
+        //     }
+        //     TURN_COLOR = !(TURN_COLOR); 
+        // }
         
         void update() {
             // Updates stone positions if a stone has been placed/captured/etc..
@@ -179,8 +171,42 @@ class Game {
         }
 
         void drawBoard() {
+            drawBorders();
             drawLines();
             drawStarPoints();
+        }
+
+        void drawBorders() {
+            // int side_padding = CELL_SIZE;
+            int BORDER_SIZE = CELL_SIZE;
+            sf::RectangleShape top_border, bottom_border, left_border, right_border;
+            std::vector<sf::RectangleShape> borders;
+            borders.push_back(top_border);
+            borders.push_back(left_border);
+            borders.push_back(left_border);
+            borders.push_back(right_border);
+
+            for (sf::RectangleShape border : borders) {
+                border.setFillColor(sf::Color::Black);
+                
+            }
+
+            top_border.setSize(sf::Vector2f(WINDOW_WIDTH, BORDER_SIZE));
+            top_border.setPosition(sf::Vector2f(WINDOW_WIDTH / 2, 0));
+
+            bottom_border.setSize(sf::Vector2f(WINDOW_WIDTH, BORDER_SIZE));
+            bottom_border.setPosition(sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT));
+
+            left_border.setSize(sf::Vector2f(BORDER_SIZE, WINDOW_HEIGHT));
+            left_border.setPosition(sf::Vector2f(0, WINDOW_HEIGHT / 2));
+
+            right_border.setSize(sf::Vector2f(BORDER_SIZE, WINDOW_HEIGHT));
+            right_border.setPosition(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT / 2));
+
+
+            
+            
+            
         }
 
         void drawLines() {
@@ -264,6 +290,8 @@ class Game {
         }
 
     private:
+        
+
         // Window constants
         int WINDOW_WIDTH = 1900;
         int WINDOW_HEIGHT = WINDOW_WIDTH;
@@ -286,7 +314,7 @@ class Game {
          * BLACK : 0
          * WHITE : 1
         */
-        std::vector<std::pair<int, int>> BOARD; // 2D Array
+        std::vector<Stone> BOARD; // 2D Array
 
         bool TURN_COLOR = 0;
         // int HALF_CELL_SIZE = CELL_SIZE / 2;
