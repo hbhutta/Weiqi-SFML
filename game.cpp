@@ -1,8 +1,8 @@
 #include <SFML/Graphics.hpp>
-#include <math.h>
+// #include <math.h>
 
 /**
- * Near:
+ * Near: (Resolved)
  * You haven't showed your render method, but it most likely clears the window. When processing events you should for example just save that a cell is now occupied
  * And only in render actually render everything based on your data
  * This can be as simple as a 2D array for the board
@@ -37,20 +37,28 @@ class Game {
                     }
                     case sf::Event::MouseButtonPressed: {
                          if (event.mouseButton.button == sf::Mouse::Left) {
-
-                            printf("Placing stone...\n");
-                            ; // bool is color (false for black, true for white)
-                            printf("Position: (%d, %d)\n", event.mouseButton.x, event.mouseButton.y);
+                            int x = roundToHundreds(event.mouseButton.x);
+                            int y = roundToHundreds(event.mouseButton.y);
 
                             struct Stone stone;
 
-                            stone.x = roundToHundreds(event.mouseButton.x);
-                            stone.y = roundToHundreds(event.mouseButton.y);
-                            stone.color = sf::Color::Black; // initial color
+                            if (TURN_COLOR) {
+                                stone.x = x;
+                                stone.y = y;
+                                stone.color = sf::Color::White;
+                                printf("Placing black stone at (%d, %d)\n", x, y);
+                                // constructStone(x, y, sf::Color::White);
+
+                            }
+                            else {
+                                stone.x = x;
+                                stone.y = y;
+                                stone.color = sf::Color::Black;
+                                printf("Placing white stone at (%d, %d)\n", x, y);
+                                // constructStone(x, y, sf::Color::Black);
+                            }
+                            TURN_COLOR = !(TURN_COLOR);
                             flagPosition(stone);
-                            stone.color = sf::Color::White;
-                            
-                            // placeStone(stone); // stone must be of the right color (if black stone was previously placed, next stone is white)
                          }
                     }   
                 }
@@ -61,9 +69,6 @@ class Game {
             BOARD.push_back(stone);
         }
 
-        /**
-         * Enumerate through all the saved positions and draw the stones
-        */
         void updateBoard() {
             for (int i = 0; i < BOARD.size(); i++) {
                 drawStone(BOARD[i]);
@@ -72,15 +77,16 @@ class Game {
 
         void drawStone(Stone stone) {
             float STONE_RADIUS = CELL_SIZE / 2;
-            float STONE_OUTLINE_THICKNESS = 1.f;
+            float STONE_OUTLINE_THICKNESS = 3.f;
 
             sf::CircleShape black_stone_shape;
             black_stone_shape.setRadius(STONE_RADIUS);
             black_stone_shape.setOrigin(black_stone_shape.getLocalBounds().width / 2, black_stone_shape.getLocalBounds().height / 2);
             black_stone_shape.setFillColor(stone.color);
             black_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
-            black_stone_shape.setOutlineColor(stone.color);
+            black_stone_shape.setOutlineColor(sf::Color::Black);
             black_stone_shape.setPosition(sf::Vector2f(stone.x, stone.y));
+
             window.draw(black_stone_shape);
         }
         
@@ -90,76 +96,15 @@ class Game {
             if (tens < 50) {
                 return value - tens;
             }
-            // else if (tens >= 50) {
             return (value - tens) + 100;
-            // }
-            // return value;
         } 
     
-        /**
-         * When the stone is placed, round the x and y values to multiples of 100
-        */
-        // void placeStone(Stone stone) {
-        //     sf::CircleShape white_stone_shape;
-        //     white_stone_shape.setRadius(CELL_SIZE / 2);
-        //     white_stone_shape.setFillColor(sf::Color::White);
-        //     white_stone_shape.setPosition(sf::Vector2f(stone.x,stone.y));
-        //     window.draw(white_stone_shape);
-        //     // printf("Placed white stone at (%4.2f, %4.2f)\n", x, y);
-        //     /**
-        //      * try-catch load texture for fancy stone
-        //      * otherwise just use sf::CircleShape
-        //     */
-        //     if (TURN_COLOR) {
-                
-        //     }
-
-
-        //     else {
-        //         sf::CircleShape black_stone_shape;
-        //         black_stone_shape.setRadius(CELL_SIZE);
-        //         black_stone_shape.setFillColor(sf::Color::Black);
-        //         black_stone_shape.setPosition(sf::Vector2f(x,y));
-        //         window.draw(black_stone_shape);
-        //         printf("Placed black stone at (%4.2f, %4.2f)\n", x, y);
-        //     }
-        //     TURN_COLOR = !(TURN_COLOR); 
-        // }
         
         void update() {
-            // Updates stone positions if a stone has been placed/captured/etc..
         }
 
-         // float STONE_RADIUS = CELL_SIZE / 2;
-            // float STONE_OUTLINE_THICKNESS = 1.f;
-
-            // sf::CircleShape black_stone_shape;
-            // black_stone_shape.setRadius(STONE_RADIUS);
-            // black_stone_shape.setOrigin(black_stone_shape.getLocalBounds().width / 2, black_stone_shape.getLocalBounds().height / 2);
-            // black_stone_shape.setFillColor(sf::Color::Black);
-            // black_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
-            // black_stone_shape.setOutlineColor(sf::Color::Black);
-            // black_stone_shape.setPosition(sf::Vector2f(900,900));
-            // window.draw(black_stone_shape);
-
-            // sf::CircleShape white_stone_shape;
-            // white_stone_shape.setRadius(STONE_RADIUS);
-            // white_stone_shape.setOrigin(white_stone_shape.getLocalBounds().width / 2, white_stone_shape.getLocalBounds().height / 2);
-            // white_stone_shape.setFillColor(sf::Color::White);
-            // white_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
-            // white_stone_shape.setOutlineColor(sf::Color::Black);
-            // white_stone_shape.setPosition(sf::Vector2f(1000,900));
-            // window.draw(white_stone_shape);
-
         void render() {
-            /**
-             * 1. Clear
-             * 2. Draw
-             * 3. Display
-            */
-
-            window.clear(sf::Color(230, 210, 90)); // Backup background
-            // window.draw(board_background); // Needs to be drawn everytime, so keep in loop
+            window.clear(sf::Color(230, 210, 90)); 
 
             drawBoard();
             updateBoard();
@@ -167,7 +112,6 @@ class Game {
             window.display();
             float x = window.getSize().x;
             float y = window.getSize().y;
-            // window.setPosition(sf::Vector2i(x,y));
         }
 
         void drawBoard() {
@@ -177,7 +121,6 @@ class Game {
         }
 
         void drawBorders() {
-            // int side_padding = CELL_SIZE;
             int BORDER_SIZE = CELL_SIZE;
             sf::RectangleShape top_border, bottom_border, left_border, right_border;
             std::vector<sf::RectangleShape> borders;
@@ -188,7 +131,6 @@ class Game {
 
             for (sf::RectangleShape border : borders) {
                 border.setFillColor(sf::Color::Black);
-                
             }
 
             top_border.setSize(sf::Vector2f(WINDOW_WIDTH, BORDER_SIZE));
@@ -202,11 +144,6 @@ class Game {
 
             right_border.setSize(sf::Vector2f(BORDER_SIZE, WINDOW_HEIGHT));
             right_border.setPosition(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT / 2));
-
-
-            
-            
-            
         }
 
         void drawLines() {
@@ -250,13 +187,7 @@ class Game {
         }
 
         void drawStarPoints() {
-            // std::cout << "drawing star points";
-            /**
-             * Draw 9 small circles at the corrrect positions relative to the window width and height using a for loop
-            */
-
             sf::CircleShape starPoint;
-            // float offset = (6.9 + (star_radius / 2));
             starPoint.setRadius(15.f);
             starPoint.setOrigin(starPoint.getLocalBounds().width / 2, starPoint.getLocalBounds().height / 2);
             starPoint.setFillColor(sf::Color::Black);
@@ -290,8 +221,6 @@ class Game {
         }
 
     private:
-        
-
         // Window constants
         int WINDOW_WIDTH = 1900;
         int WINDOW_HEIGHT = WINDOW_WIDTH;
@@ -321,15 +250,14 @@ class Game {
 
         // Sprites
         sf::Sprite board_background;
-        // sf::Sprite black_stone;
-        // sf::Sprite white_stone;
 
         // Textures
-        // sf::Texture black_stone_texture;
-        // sf::Texture white_stone_texture;
         sf::Texture background_texture;
 
         // Shapes
+        sf::CircleShape BLACK_STONE;
+        sf::CircleShape WHITE_STONE;
+        // sf::CircleShape EMPTY_STONE;
 };
 
 // Constructor
