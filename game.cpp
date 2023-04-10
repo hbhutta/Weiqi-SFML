@@ -1,13 +1,20 @@
 #include <SFML/Graphics.hpp>
 
-// PAT: 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
+/**
+ * Near:
+ * You haven't showed your render method, but it most likely clears the window. When processing events you should for example just save that a cell is now occupied
+ * And only in render actually render everything based on your data
+ * This can be as simple as a 2D array for the board
+ * And if you handle the click event just store a flag in the array indicating that a clicked position now belongs to the player
+ * And the render method would iterate over that array every frame and render the board state based on it
+*/
 
 class Game {
     public:
         Game();
         void run() {
             // loadTextures();
-            createBoard();
+            // createBoard();
             while (window.isOpen()) {
                 processEvents();
                 update();
@@ -16,11 +23,11 @@ class Game {
         }
 
         void createBoard() {
-            for (int i = 0; i < BOARD_SIZE; i++) {
-                for (int j = 0; j < BOARD_SIZE; j++) {
-                    BOARD[i].push_back(EMPTY);
-                }
-            }
+            // for (int i = 0; i < BOARD_SIZE; i++) {
+            //     for (int j = 0; j < BOARD_SIZE; j++) {
+            //         BOARD[i].push_back(EMPTY);
+            //     }
+            // }
         }
 
         void loadTextures() {
@@ -32,7 +39,6 @@ class Game {
             // catch (std::runtime_error) {
             //     // just catch, do nothing; resort to backup
             // }
-            // test
         }
 
         void processEvents() {
@@ -48,12 +54,55 @@ class Game {
                             float y = event.mouseButton.y;
 
                             printf("Placing stone...\n");
+                            std::pair<int, int> position;
+                            position.first = roundToHundreds(event.mouseButton.x);
+                            position.second = roundToHundreds(event.mouseButton.y);
+                            flagPosition(position);
+                            
                             placeStone(x, y); // stone must be of the right color (if black stone was previously placed, next stone is white)
                          }
                     }
                 }
             }
         }
+
+        void flagPosition(std::pair<int, int> position) {
+            BOARD.push_back(position);
+        }
+
+        /**
+         * Enumerate through all the saved positions and draw the stones
+        */
+        void updateBoard() {
+            for (int i = 0; i < BOARD.size(); i++) {
+                drawStone(BOARD[i]);
+            }
+        }
+
+        void drawStone(std::pair<int, int> position) {
+            float STONE_RADIUS = CELL_SIZE / 2;
+            float STONE_OUTLINE_THICKNESS = 1.f;
+
+            sf::CircleShape black_stone_shape;
+            black_stone_shape.setRadius(STONE_RADIUS);
+            black_stone_shape.setOrigin(black_stone_shape.getLocalBounds().width / 2, black_stone_shape.getLocalBounds().height / 2);
+            black_stone_shape.setFillColor(sf::Color::Black);
+            black_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
+            black_stone_shape.setOutlineColor(sf::Color::Black);
+            black_stone_shape.setPosition(sf::Vector2f(position.first, position.second));
+            window.draw(black_stone_shape);
+        }
+        
+        int roundToHundreds(int value) {
+            int tens = value % 100;
+            int step = 50;
+            if (tens < 50) {
+                return value - tens;
+            }
+            else if (tens >= 50) {
+                return value - step;
+            }
+        } 
     
         /**
          * When the stone is placed, round the x and y values to multiples of 100
@@ -121,9 +170,8 @@ class Game {
             // window.draw(board_background); // Needs to be drawn everytime, so keep in loop
 
             drawBoard();
-
-           
-
+            updateBoard();
+            
             window.display();
             float x = window.getSize().x;
             float y = window.getSize().y;
@@ -151,7 +199,6 @@ class Game {
                     v_tail,
                     v_head
                 };
-                
                 vertical_line[0].color = sf::Color::Black;
                 vertical_line[1].color = sf::Color::Black;
                 window.draw(vertical_line, 2, sf::Lines);
@@ -239,7 +286,7 @@ class Game {
          * BLACK : 0
          * WHITE : 1
         */
-        std::vector<std::vector<int>> BOARD; // 2D Array
+        std::vector<std::pair<int, int>> BOARD; // 2D Array
 
         bool TURN_COLOR = 0;
         // int HALF_CELL_SIZE = CELL_SIZE / 2;
