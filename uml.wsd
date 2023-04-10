@@ -1,0 +1,3 @@
+@startuml Weiqi-SFML
+class "Game"
+@enduml
