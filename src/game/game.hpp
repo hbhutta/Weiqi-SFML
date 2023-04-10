@@ -1,24 +1,11 @@
+#ifndef GAME_HPP
+#define GAME_HPP
 #include <SFML/Graphics.hpp>
-// #include <math.h>
-
-/**
- * Near: (Resolved)
- * You haven't showed your render method, but it most likely clears the window. When processing events you should for example just save that a cell is now occupied
- * And only in render actually render everything based on your data
- * This can be as simple as a 2D array for the board
- * And if you handle the click event just store a flag in the array indicating that a clicked position now belongs to the player
- * And the render method would iterate over that array every frame and render the board state based on it
-*/
+#include <e1/src/board/board.hpp>
 
 class Game {
     public:
         Game();
-
-        struct Stone {
-            float x;
-            float y;
-            sf::Color color;
-        };
 
         void run() {
             while (window.isOpen()) {
@@ -47,47 +34,94 @@ class Game {
                                 stone.y = y;
                                 stone.color = sf::Color::White;
                                 printf("Placing black stone at (%d, %d)\n", x, y);
-                                // constructStone(x, y, sf::Color::White);
-
                             }
                             else {
                                 stone.x = x;
                                 stone.y = y;
                                 stone.color = sf::Color::Black;
                                 printf("Placing white stone at (%d, %d)\n", x, y);
-                                // constructStone(x, y, sf::Color::Black);
                             }
+                            stone.status = true;
                             TURN_COLOR = !(TURN_COLOR);
                             flagPosition(stone);
                          }
-                    }   
+
+                        // Testing stone removal on right click
+                        if (event.mouseButton.button == sf::Mouse::Right) {
+                            /**
+                             * If there is a stone at the clicked position, 
+                             * remove it
+                            */
+                            int x = roundToHundreds(event.mouseButton.x);
+                            int y = roundToHundreds(event.mouseButton.y);
+
+                            struct Stone stone;
+                            
+                            if (isStoneAtPosition(x,y)) {
+                                stone.status = false;
+                            }
+                        }
+                    }  
                 }
             }
+        }
+        
+        bool isStoneAtPosition(int x, int y) {
+            return false; // stub
         }
 
         void flagPosition(Stone stone) {
             BOARD.push_back(stone);
         }
 
+        /**
+         * Updates the stones on the board, which includes placing and capturing.
+         * 
+         * @param Values
+         * @return -
+        */
         void updateBoard() {
             for (int i = 0; i < BOARD.size(); i++) {
-                drawStone(BOARD[i]);
+                if (BOARD[i].status = true) {
+                    drawStone(BOARD[i]);
+                }
             }
         }
+
+        /**
+         * Iterate through BOARD, and for each stone 
+         * that has the "captured" tag on it, in a given chain,
+         * replace that stone with EMPTY
+        */
+        // void captureStoneChain(StoneChain stoneChain) {
+        //     if (isStoneChainValid()) {
+        //         if (isStoneChainDead()) {
+        //             for (Stone stone: stoneChain.getChain()) {
+        //             captureStone(stone);
+        //             }
+        //         }
+        //     }
+        // }
+
+        void removeStone(Stone stone) {
+
+        }
+        
+        void captureStone(Stone stone);
 
         void drawStone(Stone stone) {
             float STONE_RADIUS = CELL_SIZE / 2;
             float STONE_OUTLINE_THICKNESS = 3.f;
 
-            sf::CircleShape black_stone_shape;
-            black_stone_shape.setRadius(STONE_RADIUS);
-            black_stone_shape.setOrigin(black_stone_shape.getLocalBounds().width / 2, black_stone_shape.getLocalBounds().height / 2);
-            black_stone_shape.setFillColor(stone.color);
-            black_stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
-            black_stone_shape.setOutlineColor(sf::Color::Black);
-            black_stone_shape.setPosition(sf::Vector2f(stone.x, stone.y));
+            sf::CircleShape stone_shape;
+            stone_shape.setRadius(STONE_RADIUS);
+            stone_shape.setOrigin(stone_shape.getLocalBounds().width / 2, stone_shape.getLocalBounds().height / 2);
+            stone_shape.setFillColor(stone.color);
+            stone_shape.setOutlineThickness(STONE_OUTLINE_THICKNESS);
+            stone_shape.setOutlineColor(sf::Color::Black);
+            stone_shape.setPosition(sf::Vector2f(stone.x, stone.y));
 
-            window.draw(black_stone_shape);
+            window.draw(stone_shape);
         }
         
         int roundToHundreds(int value) {
@@ -260,12 +294,4 @@ class Game {
         // sf::CircleShape EMPTY_STONE;
 };
 
-// Constructor
-Game::Game():window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Game", sf::Style::Default, SETTINGS) {
-    SETTINGS.antialiasingLevel = 10;
-}
-
-int main() {
-    Game game;
-    game.run();
-}
+#endif
