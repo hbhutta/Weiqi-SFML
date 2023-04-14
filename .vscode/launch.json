@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/home/haadbhutta/Desktop/projects/cpp/game_programming/sfml_examples/Weiqi-SFML",
-      "program": "/home/haadbhutta/Desktop/projects/cpp/game_programming/sfml_examples/Weiqi-SFML/build/Debug/outDebug",
+      "cwd": "/home/haadbhutta/Desktop/projects/cpp/game_programming/sfml_examples/Weiqi-SFML/src",
+      "program": "/home/haadbhutta/Desktop/projects/cpp/game_programming/sfml_examples/Weiqi-SFML/src/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

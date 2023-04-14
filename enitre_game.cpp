@@ -1,8 +1,4 @@
-#ifndef GAME_HPP
-#define GAME_HPP
 #include <SFML/Graphics.hpp>
-#include <e1/src/board/board.hpp>
-#include <e1/src/stone.stone.hpp>
 
 /* Notes:
 - Allow users to save and come back to previous game session using serialization with JSON:
@@ -15,6 +11,46 @@
 - All initialization functions will be called in the constructor
 **/
 
+class Stone {
+    public:
+        float x;
+        float y;
+        sf::Color color;
+        bool isAlive; // dead (false), alive (true); every stone is alive initially
+
+        int getX() {
+            return x;
+        }
+
+        void setX(int x_) {
+            x = x_;
+        }
+
+        int getY() {
+            return y;
+        }
+
+        void setY(int y_) {
+            y = y_;
+        }
+
+        sf::Color getColor() {
+            return color;
+        }
+
+        void setColor(sf::Color color_) {
+            color = color_;
+        }
+
+        bool getIsAlive() {
+            return isAlive;
+        }
+
+        void setIsAlive(bool isAlive_) {
+            isAlive = isAlive_;
+        }
+};
+
 class Game {
     public:
         Game();
@@ -22,7 +58,7 @@ class Game {
         void run() {
             while (window.isOpen()) {
                 processEvents();
-                update();
+                // update();
                 render();
             }
         }
@@ -40,41 +76,23 @@ class Game {
                             int y = roundToHundreds(event.mouseButton.y);
 
                             // struct Stone stone;
+                            Stone stone;
+
+                            stone.setX(x);
+                            stone.setY(y);
                             
-
-
                             if (TURN_COLOR) {
-                                stone.x = x;
-                                stone.y = y;
-                                stone.color = sf::Color::White;
-                                printf("Placing black stone at (%d, %d)\n", x, y);
+                                stone.setColor(sf::Color::White);
+                                printf("Placing white stone at (%d, %d)\n", x, y);
                             }
                             else {
-                                stone.x = x;
-                                stone.y = y;
                                 stone.color = sf::Color::Black;
                                 printf("Placing white stone at (%d, %d)\n", x, y);
                             }
-                            stone.status = true;
+                            stone.setIsAlive(true);
                             TURN_COLOR = !(TURN_COLOR);
                             flagPosition(stone);
                          }
-
-                        // Testing stone removal on right click
-                        if (event.mouseButton.button == sf::Mouse::Right) {
-                            /**
-                             * If there is a stone at the clicked position, 
-                             * remove it
-                            */
-                            int x = roundToHundreds(event.mouseButton.x);
-                            int y = roundToHundreds(event.mouseButton.y);
-
-                            struct Stone stone;
-                            
-                            if (isStoneAtPosition(x,y)) {
-                                stone.status = false;
-                            }
-                        }
                     }  
                 }
             }
@@ -84,8 +102,16 @@ class Game {
             return false; // stub
         }
 
+        /**
+         * Sets the (x,y) position on the board to a placed stone if the position is empty.
+         * When the stone is placed, the value of OCCUPIED at that position is set to true.
+         * When it is removed, the value of OCCUPIED is changed to false.
+        */
         void flagPosition(Stone stone) {
-            BOARD.push_back(stone);
+            if (OCCUPIED[stone.getY()][stone.getX()] == false) {
+                BOARD[stone.getY()][stone.getX()] = stone;
+                OCCUPIED[stone.getY()][stone.getX()] = true;
+            } 
         }
 
         /**
@@ -98,15 +124,19 @@ class Game {
             // BOARD.size() should be null at this stage, how is this working?
             // Use BOARD_SIZE = 19 instead
             for (int i = 0; i < BOARD_SIZE; i++) {
-                if (BOARD[i].status = true) { // This becomes unecessary if we use OCCUPIED
-                    drawStone(BOARD[i]);
+                for (int j = 0; j < BOARD_SIZE; j++) {
+                    // if (OCCUPIED[i][j] == false) {
+                    drawStone(BOARD[i][j]);
+                    // }  
                 }
             }
         }
     
         void initializeOccupied() { //
             for (int i = 0; i < BOARD_SIZE; i++) {
-                   OCCUPIED[i] = false; // All positions are initially empty
+                for (int j = 0; j < BOARD_SIZE; j++) {
+                    OCCUPIED[i][j] = false; // All positions are initially empty
+                }  
             }
         }
 
@@ -305,9 +335,10 @@ class Game {
          * BLACK : 0
          * WHITE : 1
         */
-        // 2D arrays
-        std::vector<vector<Stone>> BOARD;
-        std::vector<vector<bool>> OCCUPIED;
+        // 2D arrays, that will have a fixed size; they do not need to be dynamic
+        static Stone BOARD[19][19];
+        // std::vector<std::vector<Stone>> BOARD;
+        static bool OCCUPIED[19][19];
 
         bool TURN_COLOR = 0;
 
@@ -321,5 +352,3 @@ class Game {
         sf::CircleShape BLACK_STONE;
         sf::CircleShape WHITE_STONE;
 };
-
-#endif
