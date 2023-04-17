@@ -16,24 +16,45 @@ Papers:
 3. Implement model in C++
 """
 
+# # from selenium import webdriver
+# from selenium.webdriver.firefox.options import Options
+
+
+# from selenium.webdriver.common.keys import Keys
+# from selenium.webdriver.common.by import By
+
+# import requests
+# from bs4 import BeautifulSoup
+
+# options = Options()
+# options.binary_location = r'' # byte (raw) string
+# driver = webdriver.Firefox(executable_path="geckodriver")
+
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-
-import requests
-from bs4 import BeautifulSoup
+browser = webdriver.Chrome()
+browser.get('https://www.python.org/')
 
 
-driver = webdriver.Firefox()
-data_base = "http://gokifu.com/index.php"
-driver.get(data_base)
-assert "GoKifu" in driver.title
-elem = driver.find_element(By.NAME,)
+# driver.get("https://www.python.org/")
+# assert "GoKifu" in driver.title
+# # driver.find_element(By.CSS_SELECTOR)
+
+# response = requests.get(data_base)
+# print(response.status_code)
+# print(driver.title)
 
 
-
-response = requests.get(data_base)
-
+def assemble_game_information():
+    black_player_xpath = "/html/body/div[1]/div[3]/div[2]/div[1]"
+    white_player_xpath = ""
+    game_result = driver.find_element(By.CLASS_NAME, 'game_result')
+    game_date = driver.find_element(By.CLASS_NAME, 'game_date')
+    print(game_date)
+    
+    
+    
+# assemble_game_information()
+    
 
 def scrape_page():
     if (response.status_code == 200):
@@ -51,6 +72,6 @@ def scrape():
     while (curr <= pages_to_scrape):
         scrape_page()
         
-scrape_page()
+# scrape_page()
     
 
